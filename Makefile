@@ -30,6 +30,7 @@ PATH:=$(PATH):$(BUILD_TOOLS_DIR)/docker
 GOLANG_VERSION?=1.12.7
 SUPPORTED_KUBE_VERSIONS=1.9.3
 GITHUB_PROJECT_URL=https://github.com/JaneWangQuest/heapster.git
+REPOSITORY_PREFIX=janewzh13
 
 #Submodules
 SUB_MODULES_GO=go
@@ -54,6 +55,7 @@ init-go:
 init-docker:
 	@echo "Download docker from $(DOCKER_DOWNLOAD_URL)."
 	@wget --directory-prefix=$(BUILD_TOOLS_DIR) $(DOCKER_DOWNLOAD_URL) >/dev/null 2>&1
+	@echo "Extract $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE) to $(BUILD_TOOLS_DIR)/docker after download..."
 	@tar -zxf $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE) -C $(BUILD_TOOLS_DIR)
 	@rm -f $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE)
 	
@@ -62,6 +64,10 @@ subsystem:
 	@echo "Git clone from $(GITHUB_PROJECT_URL) to $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER)... TODO remote branch switch to test after initial version done."
 	@git clone --single-branch --branch test $(GITHUB_PROJECT_URL) $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER) >/dev/null 2>&1
 	make -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
+
+push:
+	@echo "Push all images to repository"
+	make push -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 	
 clean:
 	rm -rf $(BUILD_TOOLS_DIR)
