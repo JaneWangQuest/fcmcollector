@@ -1,6 +1,9 @@
 all: build
 
-#Before Build, need to set GLOBAL_TMP_DIR and CREDENTIAL_FILE_PATH
+#Before Build, need to set CREDENTIAL_FILE_PATH
+
+HOME=$(shell pwd)
+TMP_DIR=$(HOME)/tmp/
 
 #Credential Path
 DOCKERHUB_USER=$(CREDENTIAL_FILE_PATH)/dockerhub/user
@@ -9,11 +12,11 @@ DOCKERHUB_PWD=$(CREDENTIAL_FILE_PATH)/dockerhub/pwd
 #GITHUB_PWD=$(CREDENTIAL_FILE_PATH)/github/pwd
 
 #GO Envs
-TOOLS_DIR=$(GLOBAL_TMP_DIR)/heapster-tools
+TOOLS_DIR=$(TMP_DIR)/heapster-tools
 GOPACKAGE=go$(GOLANG_VERSION).linux-amd64.tar.gz
 GODOWNLOAD_URL=https://dl.google.com/go/$(GOPACKAGE)
 GOROOT=$(TOOLS_DIR)/go
-GOPATH=$(shell pwd)
+GOPATH=$(HOME)
 PATH:=$(PATH):$(GOROOT)/bin:$(GOPATH)
 
 #Project Envs
@@ -27,7 +30,10 @@ SUB_MODULES_HEAPSTER=heapster
 SUB_MODULES_SECURITY=security
 SUB_MODULES=$(SUB_MODULES_HEAPSTER) $(SUB_MODULES_SECURITY)
 
-build: clean init-go
+build: clean init-tmp init-go
+
+init-tmp:
+	mkdir -p $(TMP_DIR)
 
 init-go:
 	mkdir -p $(TOOLS_DIR)
@@ -43,4 +49,5 @@ subsystem:
 	make -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 	
 clean:
+	rm -rf $(TMP_DIR)
 	rm -rf $(TOOLS_DIR)
