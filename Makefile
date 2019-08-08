@@ -8,6 +8,7 @@ BUILD_TOOLS_DIR=$(HOME)/build-tools
 #Credential Path
 DOCKERHUB_USER=`cat $(CREDENTIAL_FILE_PATH)/dockerhub/user`
 DOCKERHUB_PWD=`cat $(CREDENTIAL_FILE_PATH)/dockerhub/pwd`
+CA_CERTS_PATH=`cat $(CREDENTIAL_FILE_PATH)/ca.path`
 #GITHUB_USER=$(CREDENTIAL_FILE_PATH)/github/user
 #GITHUB_PWD=$(CREDENTIAL_FILE_PATH)/github/pwd
 
@@ -52,10 +53,13 @@ subsystem:
 	@git clone --single-branch --branch test $(GITHUB_PROJECT_URL) $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER) >/dev/null 2>&1
 	OUTPUT_DIR=$(OUTPUT_DIR)/heapster PREFIX=$(PREFIX) make -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 
-push:
-	@echo "Push all images to repository"
-	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) make push -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
+push: push-heapster
 
+push-heapster:
+	@echo "Push heapster to repository."
+	cp $(CA_CERTS_PATH)/ca-certificates.crt $(OUTPUT_DIR)/heapster/ca-certificates.crt
+	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) OUTPUT_DIR=$(OUTPUT_DIR)/heapster make push -C $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER)
+	
 clean:
 	rm -rf $(BUILD_TOOLS_DIR)
 	rm -rf $(OUTPUT_DIR)
