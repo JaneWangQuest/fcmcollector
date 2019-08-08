@@ -19,14 +19,6 @@ GOPATH=$(HOME)
 OUTPUT_DIR=$(GOPATH)/bin
 PATH:=$(PATH):$(GOROOT)/bin:$(GOPATH)
 
-#Docker Envs
-#DOCKER_ARCH=x86_64
-#DOCKER_VERSION=19.03.1
-#DOCKER_PACKAGE=docker-$(DOCKER_VERSION).tgz
-#DOCKER_DOWNLOAD_URL=https://download.docker.com/linux/static/stable/$(DOCKER_ARCH)/$(DOCKER_PACKAGE)
-#PATH:=$(PATH):$(BUILD_TOOLS_DIR)/docker
-DOCKER_VERSION=3:19.03.1-3.*
-
 #Project Envs
 GOLANG_VERSION?=1.12.7
 SUPPORTED_KUBE_VERSIONS=1.9.3
@@ -40,7 +32,7 @@ SUB_MODULES_PREFIX=$(SUB_MODULES_GO_SRC)/k8s.io/
 SUB_MODULES_HEAPSTER=heapster
 SUB_MODULES=$(SUB_MODULES_HEAPSTER)
 
-build: clean init-workspace init-go init-docker-centos subsystem push
+build: clean init-workspace init-go subsystem push
 
 init-workspace:
 	mkdir -p $(BUILD_TOOLS_DIR)
@@ -52,23 +44,6 @@ init-go:
 	@echo "Extract $(BUILD_TOOLS_DIR)/$(GO_PACKAGE) to $(BUILD_TOOLS_DIR)/go after download..."
 	@tar -zxf $(BUILD_TOOLS_DIR)/$(GO_PACKAGE) -C $(BUILD_TOOLS_DIR)
 	@rm -f $(BUILD_TOOLS_DIR)/$(GO_PACKAGE)
-
-init-docker-centos:
-	@echo "Remove existing docker packages..."
-	@yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
-	@echo "Install docker required packages Community..."
-	@yum install -y yum-utils device-mapper-persistent-data lvm2
-	@echo "Add docker repository for installation."
-	@yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-	@echo "Install docker version docker-ce-$(DOCKER_VERSION)..."
-	@yum install -y docker-ce-$(DOCKER_VERSION)
-	@echo "Start docker daemon."
-	@systemctl start docker
-#	@echo "Download docker from $(DOCKER_DOWNLOAD_URL)."
-#	@wget --directory-prefix=$(BUILD_TOOLS_DIR) $(DOCKER_DOWNLOAD_URL) >/dev/null 2>&1
-#	@echo "Extract $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE) to $(BUILD_TOOLS_DIR)/docker after download..."
-#	@tar -zxf $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE) -C $(BUILD_TOOLS_DIR)
-#	@rm -f $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE)
 	
 subsystem:
 	mkdir -p $(SUB_MODULES_PREFIX)
@@ -81,13 +56,7 @@ push:
 	@echo "Push all images to repository"
 	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) make push -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 
-uninit-docker-centos:
-	@echo "Stop docker daemon."
-	@systemctl stop docker
-	@echo "Remove docker packages..."
-	@yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
-	
-clean: uninit-docker-centos
+clean:
 	rm -rf $(BUILD_TOOLS_DIR)
 	rm -rf $(OUTPUT_DIR)
 	rm -rf $(SUB_MODULES_GO)
