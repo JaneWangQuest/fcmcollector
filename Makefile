@@ -30,7 +30,7 @@ PATH:=$(PATH):$(BUILD_TOOLS_DIR)/docker
 GOLANG_VERSION?=1.12.7
 SUPPORTED_KUBE_VERSIONS=1.9.3
 GITHUB_PROJECT_URL=https://github.com/JaneWangQuest/heapster.git
-REPOSITORY_PREFIX=janewzh13
+PREFIX=janewzh13
 
 #Submodules
 SUB_MODULES_GO=go
@@ -60,14 +60,16 @@ init-docker:
 	@rm -f $(BUILD_TOOLS_DIR)/$(DOCKER_PACKAGE)
 	
 subsystem:
+	HEAPSTER_OUTPUT_DIR=$(OUTPUT_DIR)/heapster
 	mkdir -p $(SUB_MODULES_PREFIX)
+	mkdir -p $(HEAPSTER_OUTPUT_DIR)
 	@echo "Git clone from $(GITHUB_PROJECT_URL) to $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER)... TODO remote branch switch to test after initial version done."
 	@git clone --single-branch --branch test $(GITHUB_PROJECT_URL) $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER) >/dev/null 2>&1
-	make -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
+	OUTPUT_DIR=$(HEAPSTER_OUTPUT_DIR) PREFIX=$(PREFIX) make -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 
 push:
 	@echo "Push all images to repository"
-	make push -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
+	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) make push -C $(addprefix $(SUB_MODULES_PREFIX),$(SUB_MODULES))
 	
 clean:
 	rm -rf $(BUILD_TOOLS_DIR)
