@@ -58,7 +58,7 @@ push: push-heapster
 push-heapster:
 	@echo "Push heapster to repository."
 	cp $(CA_CERTS_PATH)/ca-certificates.crt $(OUTPUT_DIR)/heapster/ca-certificates.crt
-	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) OUTPUT_DIR=$(OUTPUT_DIR)/heapster make push -C $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER)
+	DOCKERHUB_USER=$(DOCKERHUB_USER) DOCKERHUB_PWD=$(DOCKERHUB_PWD) OUTPUT_DIR=$(OUTPUT_DIR)/heapster PREFIX=$(PREFIX) make push -C $(SUB_MODULES_PREFIX)$(SUB_MODULES_HEAPSTER)
 	
 clean:
 	rm -rf $(BUILD_TOOLS_DIR)
